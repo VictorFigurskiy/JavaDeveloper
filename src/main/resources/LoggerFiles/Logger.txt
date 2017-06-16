@@ -1,0 +1,9 @@
+Fri Jun 16 18:53:10 EEST 2017
+java.sql.SQLSyntaxErrorException: Table 'developers_info_db.companiesыыы' doesn't exist
+
+Fri Jun 16 18:59:27 EEST 2017
+Table 'developers_info_db.companies4444' doesn't exist
+
+Fri Jun 16 19:00:30 EEST 2017
+Table 'developers_info_db.companies4444' doesn't exist
+
