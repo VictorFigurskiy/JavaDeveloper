@@ -291,11 +291,12 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
         try(Connection connection = getConnection()){
             try(PreparedStatement ps = connection.prepareStatement("SELECT projects.id FROM projects WHERE Companies_id = ?;")){
                 ps.setInt(1,companyID);
-                ResultSet resultSet = ps.executeQuery();
-                while (resultSet.next()) {
-                    int projectID = resultSet.getInt(1);
-                    Project customerProject = read(projectID);
-                    projectList.add(customerProject);
+                try(ResultSet resultSet = ps.executeQuery()) {
+                    while (resultSet.next()) {
+                        int projectID = resultSet.getInt(1);
+                        Project customerProject = read(projectID);
+                        projectList.add(customerProject);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -312,11 +313,12 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
         try(Connection connection = getConnection()){
             try(PreparedStatement ps = connection.prepareStatement("SELECT projects.id FROM projects WHERE Customers_id = ?;")){
                 ps.setInt(1,customerID);
-                ResultSet resultSet = ps.executeQuery();
-                while (resultSet.next()) {
-                    int projectID = resultSet.getInt(1);
-                    Project customerProject = read(projectID);
-                    projectList.add(customerProject);
+                try(ResultSet resultSet = ps.executeQuery()) {
+                    while (resultSet.next()) {
+                        int projectID = resultSet.getInt(1);
+                        Project customerProject = read(projectID);
+                        projectList.add(customerProject);
+                    }
                 }
             }
         } catch (SQLException e) {

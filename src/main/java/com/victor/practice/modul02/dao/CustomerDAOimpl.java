@@ -37,12 +37,13 @@ public class CustomerDAOimpl extends PooledJdbcUserDao implements CustomerDAO {
         Customer customer = null;
         try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("SELECT customers.id, customer_name FROM customers WHERE customers.id = ?;")) {
             ps.setInt(1, id);
-            ResultSet resultSet = ps.executeQuery();
-            while (resultSet.next()) {
-                int customerID = resultSet.getInt("id");
-                String customerName = resultSet.getString("customer_name");
-                customer = new Customer(customerName);
-                customer.setId(customerID);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                while (resultSet.next()) {
+                    int customerID = resultSet.getInt("id");
+                    String customerName = resultSet.getString("customer_name");
+                    customer = new Customer(customerName);
+                    customer.setId(customerID);
+                }
             }
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
@@ -106,13 +107,14 @@ public class CustomerDAOimpl extends PooledJdbcUserDao implements CustomerDAO {
     public List<Customer> readAllTable() {
         List<Customer> customerList = new ArrayList<>();
         try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("SELECT * FROM customers")) {
-            ResultSet resultSet = ps.executeQuery();
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String customerName = resultSet.getString("customer_name");
-                Customer customer = new Customer(customerName);
-                customer.setId(id);
-                customerList.add(customer);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("id");
+                    String customerName = resultSet.getString("customer_name");
+                    Customer customer = new Customer(customerName);
+                    customer.setId(id);
+                    customerList.add(customer);
+                }
             }
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");

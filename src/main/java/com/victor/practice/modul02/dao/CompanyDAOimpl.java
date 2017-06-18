@@ -37,12 +37,13 @@ public class CompanyDAOimpl extends PooledJdbcUserDao implements CompanyDAO {
         Company company = null;
         try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("SELECT companies.id, company_name FROM companies WHERE companies.id = ?")) {
             ps.setInt(1, id);
-            ResultSet resultSet = ps.executeQuery();
-            while (resultSet.next()) {
-                int companyID = resultSet.getInt("id");
-                String companyName = resultSet.getString("company_name");
-                company = new Company(companyName);
-                company.setId(companyID);
+            try (ResultSet resultSet = ps.executeQuery()) {
+                while (resultSet.next()) {
+                    int companyID = resultSet.getInt("id");
+                    String companyName = resultSet.getString("company_name");
+                    company = new Company(companyName);
+                    company.setId(companyID);
+                }
             }
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
@@ -89,12 +90,12 @@ public class CompanyDAOimpl extends PooledJdbcUserDao implements CompanyDAO {
                 }
             }
 
-        try (PreparedStatement ps = connection.prepareStatement("DELETE FROM companies WHERE id = ?;")) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
-        }
+            try (PreparedStatement ps = connection.prepareStatement("DELETE FROM companies WHERE id = ?;")) {
+                ps.setInt(1, id);
+                ps.executeUpdate();
+            }
 
-        connection.commit();
+            connection.commit();
 
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
