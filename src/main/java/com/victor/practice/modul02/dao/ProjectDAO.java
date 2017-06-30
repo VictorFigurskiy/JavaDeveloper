@@ -8,11 +8,11 @@ import java.util.List;
  * Created by Sonikb on 11.06.2017.
  */
 public interface ProjectDAO {
-    Project save(Project obj);
+    Project save(Project project);
 
     Project read(int id);
 
-    void update(int id, Project obj);
+    void update(int id, Project project);
 
     void delete(Project project);
 

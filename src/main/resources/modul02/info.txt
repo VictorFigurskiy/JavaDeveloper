@@ -1,0 +1,6 @@
+developer_info_db.sql
+Made for the JDBC driver and dbcp - DB Connection pool.
+Realisation in packages sqlDAO.
+JDBC in package jdbcDAO.
+DBCP in pooledJdbc and configured in Main.
+Simple logger for test of logs to file.

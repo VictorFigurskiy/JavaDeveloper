@@ -1,7 +1,7 @@
 package com.victor.practice.modul02.controller;
 
 import com.victor.practice.modul02.dao.SkillsDAO;
-import com.victor.practice.modul02.instance.Skill;
+import com.victor.practice.modul02.instance.Skills;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +18,9 @@ public class SkillControllerImpl implements SkillController {
     }
 
     @Override
-    public List<Skill> readAllTable() {
-        List<Skill> skillList = dao.readAllTable();
-        if (skillList == null || skillList.isEmpty()){
+    public List<Skills> readAllTable() {
+        List<Skills> skillsList = dao.readAllTable();
+        if (skillsList == null || skillsList.isEmpty()){
             System.out.println("Список пуст!");
             return new ArrayList<>();
         }
@@ -28,13 +28,13 @@ public class SkillControllerImpl implements SkillController {
     }
 
     @Override
-    public Skill addData(String skillName) {
-        return dao.save(new Skill(skillName));
+    public Skills addData(String skillName) {
+        return dao.save(new Skills(skillName));
     }
 
     @Override
     public void update(int id, String skillName) {
-        dao.update(id,new Skill(skillName));
+        dao.update(id,new Skills(skillName));
     }
 
     @Override

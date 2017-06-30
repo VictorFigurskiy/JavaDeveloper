@@ -1,7 +1,8 @@
-package com.victor.practice.modul02.dao;
+package com.victor.practice.modul02.dao.sqlDAO;
 
-import com.victor.practice.modul02.dao.PooledJdbc.PooledJdbcUserDao;
-import com.victor.practice.modul02.dao.simpleLogger.ExeptionLogger;
+import com.victor.practice.modul02.dao.ProjectDAO;
+import com.victor.practice.modul02.dao.pooledJdbc.PooledJdbcUserDao;
+import com.victor.practice.modul02.dao.simpleLogger.ExceptionLogger;
 import com.victor.practice.modul02.instance.*;
 
 import javax.sql.DataSource;
@@ -20,12 +21,12 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
 
     @Override
     public Project save(Project project) {
-
-        try (Connection connection = getConnection()) {
-
+        Connection connection = null;
+        try {
+            connection = getConnection();
             connection.setAutoCommit(false);
 
-            try (PreparedStatement ps = connection.prepareStatement("INSERT INTO projects(project_name, cost, Customers_id, Companies_id) VALUES (?,?,?,?);")) {
+            try (PreparedStatement ps = connection.prepareStatement("INSERT INTO projects(project_name, cost, customer_id, company_id) VALUES (?,?,?,?);")) {
                 ps.setString(1, project.getProjectName());
                 ps.setInt(2, project.getProjectCost());
                 ps.setInt(3, project.getCustomer().getId());
@@ -34,7 +35,7 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
             }
 
             for (Developer developer : project.getDeveloperList()) {
-                try (PreparedStatement ps = connection.prepareStatement("INSERT INTO developers(name, surname, salary, Projects_id) VALUES(?,?,?,(SELECT projects.id FROM projects WHERE project_name = ? AND cost = ? AND Customers_id = ? AND Companies_id = ?));")) {
+                try (PreparedStatement ps = connection.prepareStatement("INSERT INTO developers(name, surname, salary, Projects_id) VALUES(?,?,?,(SELECT projects.id FROM projects WHERE project_name = ? AND cost = ? AND customer_id = ? AND company_id = ?));")) {
                     ps.setString(1, developer.getName());
                     ps.setString(2, developer.getSurname());
                     ps.setInt(3, developer.getSalary());
@@ -53,10 +54,10 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
                     }
                 }
 
-                for (Skill skill : developer.getSkillList())
+                for (Skills skills : developer.getSkillsList())
                     try (PreparedStatement ps = connection.prepareStatement("INSERT INTO developers_has_skills(Developers_id, Skills_id) VALUES (?,?)")) {
                         ps.setInt(1, developerID);
-                        ps.setInt(2, skill.getId());
+                        ps.setInt(2, skills.getId());
                         ps.execute();
                     }
             }
@@ -64,19 +65,39 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
             connection.commit();
 
         } catch (SQLException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException e1) {
+                ExceptionLogger.initLogger(e1.toString());
+            }
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
+        }finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+            }
         }
         return project;
     }
 
     @Override
     public Project read(int id) {
-
+        Connection connection = null;
         Project project = null;
 
-        try (Connection connection = getConnection()) {
-
+        try {
+            connection = getConnection();
             connection.setAutoCommit(false);
 
             try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM projects WHERE id = ?")) {
@@ -86,8 +107,8 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
                         int projectID = resultSet.getInt("id");
                         String projectName = resultSet.getString("project_name");
                         int projectCost = resultSet.getInt("cost");
-                        int companyID = resultSet.getInt("Companies_id");
-                        int customerID = resultSet.getInt("Customers_id");
+                        int companyID = resultSet.getInt("company_id");
+                        int customerID = resultSet.getInt("customer_id");
 
 
                         Company company = null;
@@ -124,7 +145,7 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
                                     String developSurname = resultSet3.getString("surname");
                                     int salary = resultSet3.getInt("salary");
                                     int projectIDFromDevelopers = resultSet3.getInt("Projects_id");
-                                    Developer developer = new Developer(developName, developSurname, salary, new ArrayList<Skill>());
+                                    Developer developer = new Developer(developName, developSurname, salary, new ArrayList<Skills>());
                                     developer.setId(developID);
                                     developer.setProjectID(projectIDFromDevelopers);
                                     developerList.add(developer);
@@ -139,9 +160,9 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
                                     while (resultSet4.next()) {
                                         int skillID = resultSet4.getInt("id");
                                         String skillName = resultSet4.getString("skills");
-                                        Skill skill = new Skill(skillName);
-                                        skill.setId(skillID);
-                                        developer.getSkillList().add(skill);
+                                        Skills skills = new Skills(skillName);
+                                        skills.setId(skillID);
+                                        developer.getSkillsList().add(skills);
                                     }
                                 }
                             }
@@ -156,16 +177,34 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
 
             connection.commit();
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            try {
+                connection.rollback();
+            } catch (SQLException e1) {
+                ExceptionLogger.initLogger(e1.toString());
+            }
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
+        }finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+            }
         }
         return project;
     }
 
     @Override
     public void update(int id, Project project) {
-        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("UPDATE projects SET project_name = ?, cost = ?, Customers_id = ?, Companies_id = ? WHERE id = ?;")) {
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("UPDATE projects SET project_name = ?, cost = ?, customer_id = ?, company_id = ? WHERE id = ?;")) {
             ps.setString(1, project.getProjectName());
             ps.setInt(2, project.getProjectCost());
             ps.setInt(3,project.getCustomer().getId());
@@ -174,14 +213,15 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
             ps.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
     }
 
     @Override
     public void delete(Project project) {
-        try (Connection connection = getConnection()) {
-
+        Connection connection = null;
+        try  {
+            connection = getConnection();
             connection.setAutoCommit(false);
 
             for (Developer developer : project.getDeveloperList()) {
@@ -204,31 +244,51 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
             connection.commit();
 
         } catch (SQLException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException e1) {
+                ExceptionLogger.initLogger(e1.toString());
+            }
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
+        }finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+            }
         }
     }
 
     @Override
     public List<Project> readAllTable() {
-
+        Connection connection = null;
         List<Project> projectList = new ArrayList<>();
 
-        try (Connection connection = getConnection()) {
-
+        try {
+            connection = getConnection();
             connection.setAutoCommit(false);
 
             Company company;
             Customer customer;
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT projects.id, project_name, cost, Customers_id, customers.customer_name AS customer, Companies_id, companies.company_name AS company FROM projects LEFT JOIN customers ON projects.Customers_id = customers.id LEFT JOIN companies ON projects.Companies_id = companies.id;")) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT projects.id, project_name, cost, customer_id, customers.customer_name AS customer, company_id, companies.company_name AS company FROM projects LEFT JOIN customers ON projects.customer_id = customers.id LEFT JOIN companies ON projects.company_id = companies.id;")) {
                 try (ResultSet rs = preparedStatement.executeQuery()) {
                     while (rs.next()) {
                         int projectID = rs.getInt("id");
                         String projectName = rs.getString("project_name");
                         int projectCost = rs.getInt("cost");
-                        int customerID = rs.getInt("Customers_id");
+                        int customerID = rs.getInt("customer_id");
                         String customerName = rs.getString("customer");
-                        int companyID = rs.getInt("Companies_id");
+                        int companyID = rs.getInt("company_id");
                         String companyName = rs.getString("company");
 
                         customer = new Customer(customerName);
@@ -246,7 +306,7 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
                                     String developSurname = resultSet3.getString("surname");
                                     int salary = resultSet3.getInt("salary");
                                     int projectIDFromDevelopers = resultSet3.getInt("Projects_id");
-                                    Developer developer = new Developer(developName, developSurname, salary, new ArrayList<Skill>());
+                                    Developer developer = new Developer(developName, developSurname, salary, new ArrayList<Skills>());
                                     developer.setId(developID);
                                     developer.setProjectID(projectIDFromDevelopers);
                                     developerList.add(developer);
@@ -261,9 +321,9 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
                                     while (resultSet4.next()) {
                                         int skillID = resultSet4.getInt("id");
                                         String skillName = resultSet4.getString("skills");
-                                        Skill skill = new Skill(skillName);
-                                        skill.setId(skillID);
-                                        developer.getSkillList().add(skill);
+                                        Skills skills = new Skills(skillName);
+                                        skills.setId(skillID);
+                                        developer.getSkillsList().add(skills);
                                     }
                                 }
                             }
@@ -278,8 +338,28 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
             connection.commit();
 
         } catch (SQLException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException e1) {
+                ExceptionLogger.initLogger(e1.toString());
+            }
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
+        }finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+            }
         }
         return projectList;
     }
@@ -289,7 +369,7 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
         List<Project> projectList = new ArrayList<>();
 
         try(Connection connection = getConnection()){
-            try(PreparedStatement ps = connection.prepareStatement("SELECT projects.id FROM projects WHERE Companies_id = ?;")){
+            try(PreparedStatement ps = connection.prepareStatement("SELECT projects.id FROM projects WHERE company_id = ?;")){
                 ps.setInt(1,companyID);
                 try(ResultSet resultSet = ps.executeQuery()) {
                     while (resultSet.next()) {
@@ -301,7 +381,7 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
             }
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
         return projectList;
     }
@@ -311,7 +391,7 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
         List<Project> projectList = new ArrayList<>();
 
         try(Connection connection = getConnection()){
-            try(PreparedStatement ps = connection.prepareStatement("SELECT projects.id FROM projects WHERE Customers_id = ?;")){
+            try(PreparedStatement ps = connection.prepareStatement("SELECT projects.id FROM projects WHERE customer_id = ?;")){
                 ps.setInt(1,customerID);
                 try(ResultSet resultSet = ps.executeQuery()) {
                     while (resultSet.next()) {
@@ -323,7 +403,7 @@ public class ProjectDAOimpl extends PooledJdbcUserDao implements ProjectDAO {
             }
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
         return projectList;
     }

@@ -1,7 +1,7 @@
 package com.victor.practice.modul02.consoleView;
 
 import com.victor.practice.modul02.API.API;
-import com.victor.practice.modul02.dao.simpleLogger.ExeptionLogger;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,8 +11,11 @@ import java.util.NoSuchElementException;
  * Created by Sonikb on 04.06.2017.
  */
 public class ConsoleHelper {
+
     private API api;
     private BufferedReader buffRead;
+
+    private final static Logger logger = Logger.getLogger(ConsoleHelper.class);
 
     public ConsoleHelper(API api, BufferedReader buffRead) {
         this.api = api;
@@ -71,7 +74,7 @@ public class ConsoleHelper {
                 }
             } catch (IOException e) {
                 System.err.println("Ошибка ввода/вывода данных!");
-                ExeptionLogger.initLogger(e.toString());
+                logger.error(e);
             } catch (NoSuchElementException | NumberFormatException n) {
                 System.out.println("Команда введена неверно! Повторите выбор!" + " \nДля выхода нажмите \"0\"");
             }
@@ -105,7 +108,7 @@ public class ConsoleHelper {
                 }
             } catch (IOException e) {
                 System.err.println("Ошибка ввода/вывода данных!");
-                ExeptionLogger.initLogger(e.toString());
+                logger.error(e);
             }
 
         }
@@ -138,7 +141,7 @@ public class ConsoleHelper {
                 }
             } catch (IOException e) {
                 System.err.println("Ошибка ввода/вывода данных!");
-                ExeptionLogger.initLogger(e.toString());
+                logger.error(e);
             }
         }
     }
@@ -170,7 +173,7 @@ public class ConsoleHelper {
                 }
             } catch (IOException e) {
                 System.err.println("Ошибка ввода/вывода данных!");
-                ExeptionLogger.initLogger(e.toString());
+                logger.error(e);
             }
 
         }
@@ -203,7 +206,7 @@ public class ConsoleHelper {
                 }
             } catch (IOException e) {
                 System.err.println("Ошибка ввода/вывода данных!");
-                ExeptionLogger.initLogger(e.toString());
+                logger.error(e);
             }
 
         }

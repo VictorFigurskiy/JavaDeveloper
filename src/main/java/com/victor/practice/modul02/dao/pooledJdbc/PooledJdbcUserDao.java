@@ -1,4 +1,4 @@
-package com.victor.practice.modul02.dao.PooledJdbc;
+package com.victor.practice.modul02.dao.pooledJdbc;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

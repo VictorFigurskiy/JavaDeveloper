@@ -8,7 +8,7 @@ import java.util.List;
  * Created by Sonikb on 11.06.2017.
  */
 public interface DeveloperDAO {
-    Developer save(Developer developer, int projectID);
+    Developer save(Developer developer);
 
     Developer read(int id);
 

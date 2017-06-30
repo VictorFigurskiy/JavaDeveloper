@@ -1,8 +1,8 @@
 package com.victor.practice.modul02.API;
 
 import com.victor.practice.modul02.controller.*;
-import com.victor.practice.modul02.dao.simpleLogger.ExeptionLogger;
 import com.victor.practice.modul02.instance.*;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,6 +21,8 @@ public class Application implements API {
     private ProjectController projectController;
     private SkillController skillController;
     private BufferedReader br;
+
+    private final static Logger logger = Logger.getLogger(Application.class);
 
     public Application(CompanyController companyController, CustomerController customerController, DeveloperController developerController, ProjectController projectController, SkillController skillController, BufferedReader br) {
         this.companyController = companyController;
@@ -67,9 +69,9 @@ public class Application implements API {
                     break;
 
                 case 5:
-                    List<Skill> skillList = skillController.readAllTable();
+                    List<Skills> skillsList = skillController.readAllTable();
                     System.out.println("Список навыков в системе:");
-                    skillList.forEach(System.out::println);
+                    skillsList.forEach(System.out::println);
                     break;
 
                 case 0:
@@ -143,23 +145,23 @@ public class Application implements API {
                         int salary = Integer.parseInt(br.readLine());
 
                         System.out.println("Выберите номер навыка для разработчика из списка:");
-                        List<Skill> fullSkillList = skillController.readAllTable();
+                        List<Skills> fullSkillsList = skillController.readAllTable();
                         i = 1;
                         int skillIndex = -1;
-                        List<Skill> devSkillList = new ArrayList<>();
+                        List<Skills> devSkillsList = new ArrayList<>();
                         while (skillIndex != 0) {
-                            for (Skill skill : fullSkillList) {
-                                System.out.println(i++ + ". " + skill.getSkillName());
+                            for (Skills skills : fullSkillsList) {
+                                System.out.println(i++ + ". " + skills.getSkillName());
                             }
                             i = 1;
                             skillIndex = Integer.parseInt(br.readLine());
                             if (skillIndex != 0) {
-                                Skill devSkill = fullSkillList.get(skillIndex - 1);
-                                devSkillList.add(devSkill);
+                                Skills devSkills = fullSkillsList.get(skillIndex - 1);
+                                devSkillsList.add(devSkills);
                             }
                             System.out.println("Для окончания добавления навыков введите 0, для дальнейшего добавления навыков выберите навык:");
                         }
-                        developerList.add(new Developer(name, surname, salary, devSkillList));
+                        developerList.add(new Developer(name, surname, salary, devSkillsList));
                         System.out.println("Для продолжения добавления разработчиков нажмите 1, в противном случае данные по проекту будут сохранены и Вы перейдете в главное меню");
                         String answer = br.readLine();
                         switch (answer) {
@@ -192,24 +194,24 @@ public class Application implements API {
                     int salary = Integer.parseInt(br.readLine());
 
                     System.out.println("Выберите номер навыка для разработчика из списка:");
-                    List<Skill> fullSkillList = skillController.readAllTable();
+                    List<Skills> fullSkillsList = skillController.readAllTable();
                     i = 1;
                     int skillIndex = -1;
-                    List<Skill> devSkillList = new ArrayList<>();
+                    List<Skills> devSkillsList = new ArrayList<>();
                     while (skillIndex != 0) {
-                        for (Skill skill : fullSkillList) {
-                            System.out.println(i++ + ". " + skill.getSkillName());
+                        for (Skills skills : fullSkillsList) {
+                            System.out.println(i++ + ". " + skills.getSkillName());
                         }
                         i = 1;
                         skillIndex = Integer.parseInt(br.readLine());
                         if (skillIndex != 0) {
-                            Skill devSkill = fullSkillList.get(skillIndex - 1);
-                            devSkillList.add(devSkill);
+                            Skills devSkills = fullSkillsList.get(skillIndex - 1);
+                            devSkillsList.add(devSkills);
                         }
                         System.out.println("Для сохранения и выхода нажмите 0, для дальнейшего добавления навыков выберите навык:");
                     }
 
-                    Developer developer = developerController.addData(name, surname, salary, devSkillList, projectID);
+                    Developer developer = developerController.addData(name, surname, salary, devSkillsList, projectID);
                     System.out.println("Новый разработчик " + developer.getName() + " " + developer.getSurname() + " успешно сохранен!");
                     break;
 
@@ -217,8 +219,8 @@ public class Application implements API {
                 case 5:
                     System.out.println("Для добавления нового навыка введите его название:");
                     String skillName = br.readLine();
-                    Skill skill = skillController.addData(skillName);
-                    System.out.println("Новый навык " + skill.getSkillName() + " успешно сохранен!");
+                    Skills skills = skillController.addData(skillName);
+                    System.out.println("Новый навык " + skills.getSkillName() + " успешно сохранен!");
                     break;
 
 
@@ -230,7 +232,7 @@ public class Application implements API {
             }
         } catch (IOException e) {
             System.err.println("Ошибка ввода/вывода данных!");
-            ExeptionLogger.initLogger(e.toString());
+            logger.error(e);
         } catch (NoSuchElementException | NumberFormatException n) {
             System.out.println("Команда введена неверно! Повторите выбор!" + " \nДля выхода нажмите \"0\"");
         }
@@ -322,8 +324,10 @@ public class Application implements API {
                     String newDevSurname = br.readLine();
                     System.out.println("Зароботная плата " + developer.getSalary() + " изменяем на:");
                     int newSalary = Integer.parseInt(br.readLine());
-                    System.out.println(developer.getProjectID());
-                    Project project = projectController.readByID(developer.getProjectID());
+                    Project project;
+                    if (developer.getProjectID() != 0) {
+                        project = projectController.readByID(developer.getProjectID());
+                    } else project = projectController.readByID(developer.getProject().getId());
                     System.out.println("Разработчик работает над проектом " + project.getProjectName());
                     System.out.println("Если хотите изменить проект для разработчика нажмите 1, при нажатии любой другой команды все указанные данные по разработчику будут изменены!");
                     String answer = br.readLine();
@@ -334,27 +338,32 @@ public class Application implements API {
                             System.out.println(i++ + ". " + projectFromAll.getProjectName());
                         }
                         int projectIndex = Integer.parseInt(br.readLine());
+                        Project projectFromDB = projectList.get(projectIndex - 1);
                         int newProjectID = projectList.get(projectIndex - 1).getId();
-                        developerController.update(developer.getId(), newDevName, newDevSurname, newSalary, developer.getSkillList(), newProjectID);
-
+                        if (developer.getProjectID() != 0) {
+                            developerController.update(developer.getId(), newDevName, newDevSurname, newSalary, developer.getSkillsList(), newProjectID);
+                        } else
+                            developerController.update(developer.getId(), newDevName, newDevSurname, newSalary, developer.getSkillsList(), projectFromDB);
+                    } else if (developer.getProjectID() != 0) {
+                        developerController.update(developer.getId(), newDevName, newDevSurname, newSalary, developer.getSkillsList(), developer.getProjectID());
                     } else
-                        developerController.update(developer.getId(), newDevName, newDevSurname, newSalary, developer.getSkillList(), developer.getProjectID());
+                        developerController.update(developer.getId(), newDevName, newDevSurname, newSalary, developer.getSkillsList(), project);
                     System.out.println("Изменения сохранены!");
                     break;
 
 
                 case 5:
                     System.out.println("Выберите номер навыка из списка для изменения его данных");
-                    List<Skill> skillList = skillController.readAllTable();
+                    List<Skills> skillsList = skillController.readAllTable();
                     i = 1;
-                    for (Skill skill : skillList) {
-                        System.out.println(i++ + ". " + skill);
+                    for (Skills skills : skillsList) {
+                        System.out.println(i++ + ". " + skills);
                     }
                     int skillIndex = Integer.parseInt(br.readLine());
-                    Skill oldSkill = skillList.get(skillIndex - 1);
-                    System.out.println("Название навыка " + oldSkill.getSkillName() + " изменяем на:");
+                    Skills oldSkills = skillsList.get(skillIndex - 1);
+                    System.out.println("Название навыка " + oldSkills.getSkillName() + " изменяем на:");
                     String newSkillName = br.readLine();
-                    skillController.update(oldSkill.getId(), newSkillName);
+                    skillController.update(oldSkills.getId(), newSkillName);
                     System.out.println("Изменения сохранены!");
                     break;
 
@@ -366,7 +375,7 @@ public class Application implements API {
             }
         } catch (IOException e) {
             System.err.println("Ошибка ввода/вывода данных!");
-            ExeptionLogger.initLogger(e.toString());
+            logger.error(e);
         } catch (NoSuchElementException | NumberFormatException n) {
             System.out.println("Команда введена неверно! Повторите выбор!" + " \nДля выхода нажмите \"0\"");
         }
@@ -474,7 +483,7 @@ public class Application implements API {
                     }
                     int developerIndex = Integer.parseInt(br.readLine());
                     Developer developer = developerList.get(developerIndex - 1);
-                    System.out.println("Вы уверены что хотите удалить разработчика \"" + developer.getName() + " " + developer.getSurname() + "\"?");
+                    System.out.println("Вы уверены что хотите удалить разработчика \"" + developer.getName() + " " + developer.getSurname() + "\"?" + developer.getId());
                     System.out.println("\nДля подтверждения выбора введите 1 или 0 для отмены и возврата в предидущее меню:");
                     System.out.println("Сделайте Ваш выбор:");
                     while (true) {
@@ -492,20 +501,20 @@ public class Application implements API {
 
                 case 5:
                     System.out.println("Выберите номер навыка из списка для удаления записи по нему");
-                    List<Skill> skillList = skillController.readAllTable();
+                    List<Skills> skillsList = skillController.readAllTable();
                     i = 1;
-                    for (Skill skill : skillList) {
-                        System.out.println(i++ + ". " + skill);
+                    for (Skills skills : skillsList) {
+                        System.out.println(i++ + ". " + skills);
                     }
                     int skillIndex = Integer.parseInt(br.readLine());
-                    Skill skill = skillList.get(skillIndex - 1);
-                    System.out.println("Вы уверены что хотите удалить разработчика \"" + skill + "\"?");
+                    Skills skills = skillsList.get(skillIndex - 1);
+                    System.out.println("Вы уверены что хотите удалить разработчика \"" + skills + "\"?");
                     System.out.println("\nДля подтверждения выбора введите 1 или 0 для отмены и возврата в предидущее меню:");
                     System.out.println("Сделайте Ваш выбор:");
                     while (true) {
                         int choice = Integer.parseInt(br.readLine());
                         if (choice == 1) {
-                            skillController.delete(skill.getId());
+                            skillController.delete(skills.getId());
                             System.out.println("Навык удален!");
                             break;
                         } else if (choice == 0) {
@@ -523,7 +532,7 @@ public class Application implements API {
             }
         } catch (IOException e) {
             System.err.println("Ошибка ввода/вывода данных!");
-            ExeptionLogger.initLogger(e.toString());
+            logger.error(e);
         } catch (NoSuchElementException | NumberFormatException n) {
             System.out.println("Команда введена неверно! Повторите выбор!" + " \nДля выхода нажмите \"0\"");
         }

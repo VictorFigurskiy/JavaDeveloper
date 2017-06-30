@@ -1,31 +1,48 @@
 package com.victor.practice.modul02.instance;
 
+import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by Sonikb on 04.06.2017.
  */
-public class Developer {
+@Entity
+@NamedQuery(name = "Developer.findAll", query = "select d from Developer d")
+@Table(name = "developers")
+public class Developer implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column
     private String name;
+    @Column
     private String surname;
+    @Column
     private int salary;
-    private List<Skill> skillList;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<Skills> skillsList;
+    @Transient
     private int projectID;
+    @ManyToOne
+    private Project project;
 
-    public Developer(String name, String surname, int salary, List<Skill> skillList) {
+    public Developer() {
+    }
+
+    public Developer(String name, String surname, int salary, List<Skills> skillsList) {
         this.name = name;
         this.surname = surname;
         this.salary = salary;
-        this.skillList = skillList;
+        this.skillsList = skillsList;
     }
 
-    public List<Skill> getSkillList() {
-        return skillList;
+    public List<Skills> getSkillsList() {
+        return skillsList;
     }
 
-    public void setSkillList(List<Skill> skillList) {
-        this.skillList = skillList;
+    public void setSkillsList(List<Skills> skillsList) {
+        this.skillsList = skillsList;
     }
 
     public String getName() {
@@ -68,11 +85,19 @@ public class Developer {
         this.projectID = projectID;
     }
 
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     @Override
     public String toString() {
         return "Имя " + name +
                 ", Фамилия " + surname +
                 ", зарплата " + salary +
-                ", список навыков " + skillList;
+                ", список навыков " + skillsList;
     }
 }

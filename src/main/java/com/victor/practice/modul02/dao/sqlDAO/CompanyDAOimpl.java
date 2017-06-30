@@ -1,7 +1,9 @@
-package com.victor.practice.modul02.dao;
+package com.victor.practice.modul02.dao.sqlDAO;
 
-import com.victor.practice.modul02.dao.PooledJdbc.PooledJdbcUserDao;
-import com.victor.practice.modul02.dao.simpleLogger.ExeptionLogger;
+
+import com.victor.practice.modul02.dao.CompanyDAO;
+import com.victor.practice.modul02.dao.pooledJdbc.PooledJdbcUserDao;
+import com.victor.practice.modul02.dao.simpleLogger.ExceptionLogger;
 import com.victor.practice.modul02.instance.Company;
 import com.victor.practice.modul02.instance.Developer;
 import com.victor.practice.modul02.instance.Project;
@@ -21,15 +23,15 @@ public class CompanyDAOimpl extends PooledJdbcUserDao implements CompanyDAO {
     }
 
     @Override
-    public Company save(Company obj) {
+    public Company save(Company company) {
         try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("INSERT INTO companies(company_name) VALUE (?)")) {
-            ps.setString(1, obj.getCompanyName());
+            ps.setString(1, company.getCompanyName());
             ps.execute();
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
-        return obj;
+        return company;
     }
 
     @Override
@@ -47,29 +49,29 @@ public class CompanyDAOimpl extends PooledJdbcUserDao implements CompanyDAO {
             }
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
         return company;
     }
 
     @Override
-    public void update(int id, Company obj) {
+    public void update(int id, Company company) {
         try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("UPDATE companies SET company_name = ? WHERE id = ?;")) {
-            ps.setString(1, obj.getCompanyName());
+            ps.setString(1, company.getCompanyName());
             ps.setInt(2, id);
             ps.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
     }
 
     @Override
     public void delete(int id, List<Project> projectList) {
-        try (Connection connection = getConnection()) {
-
+        Connection connection = null;
+        try {
+            connection = getConnection();
             connection.setAutoCommit(false);
-
             for (Project project : projectList) {
 
                 for (Developer developer : project.getDeveloperList()) {
@@ -97,27 +99,47 @@ public class CompanyDAOimpl extends PooledJdbcUserDao implements CompanyDAO {
 
             connection.commit();
 
-        } catch (SQLException e) {
-            System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+        } catch (Exception e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+                ExceptionLogger.initLogger(e.toString());
+            } catch (SQLException e1) {
+                ExceptionLogger.initLogger(e.toString());
+            }
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+            }
         }
     }
 
     @Override
     public List<Company> readAllTable() {
         List<Company> companyList = new ArrayList<>();
-        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("SELECT * FROM companies4444")) {
-            ResultSet resultSet = ps.executeQuery();
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String companyName = resultSet.getString("company_name");
-                Company company = new Company(companyName);
-                company.setId(id);
-                companyList.add(company);
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("SELECT * FROM companies")) {
+            try(ResultSet resultSet = ps.executeQuery()) {
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("id");
+                    String companyName = resultSet.getString("company_name");
+                    Company company = new Company(companyName);
+                    company.setId(id);
+                    companyList.add(company);
+                }
             }
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
         return companyList;
     }

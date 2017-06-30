@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Created by Sonikb on 16.06.2017.
  */
-public class ExeptionLogger {
+public class ExceptionLogger {
 
     public static void initLogger(String exMessage) {
        /* try {

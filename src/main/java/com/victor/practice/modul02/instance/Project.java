@@ -1,17 +1,35 @@
 package com.victor.practice.modul02.instance;
 
+import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by Sonikb on 04.06.2017.
  */
-public class Project {
+@Entity
+@NamedQueries({
+        @NamedQuery(name = "Project.findAll", query = "select p from Project p"),
+        @NamedQuery(name = "Project.findByCompany", query = "select p from Project p where p.company.id = :company"),
+        @NamedQuery(name = "Project.findByCustomer", query = "select p from Project p where p.customer.id = :customer")})
+@Table(name = "projects")
+public class Project implements Serializable{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(name = "project_name")
     private String projectName;
+    @Column(name = "cost")
     private int projectCost;
+    @ManyToOne
     private Company company;
+    @ManyToOne
     private Customer customer;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "project")
     private List<Developer> developerList;
+
+    public Project() {
+    }
 
     public Project(String projectName, int projectCost, Company company, Customer customer, List<Developer> developerList) {
         this.projectName = projectName;

@@ -1,0 +1,6 @@
+For Hibernate and JPA.
+exampleHibernateJPA is made like example of use on JPA and Hibernate.
+In instance configuration with JPA @Annotations.
+In resources META-INF config files Hibernate.cfg.xml for Hibernate and Persistence.xml for JPA, for this we need Hibernate.jar or dependency in pom.xml.
+All realization of JPA DAO inside jpaHibernateDAO.
+JpaUtil is made for only one EntityManagerFactory on application.

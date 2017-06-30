@@ -1,7 +1,8 @@
-package com.victor.practice.modul02.dao;
+package com.victor.practice.modul02.dao.sqlDAO;
 
-import com.victor.practice.modul02.dao.PooledJdbc.PooledJdbcUserDao;
-import com.victor.practice.modul02.dao.simpleLogger.ExeptionLogger;
+import com.victor.practice.modul02.dao.CustomerDAO;
+import com.victor.practice.modul02.dao.pooledJdbc.PooledJdbcUserDao;
+import com.victor.practice.modul02.dao.simpleLogger.ExceptionLogger;
 import com.victor.practice.modul02.instance.Customer;
 import com.victor.practice.modul02.instance.Developer;
 import com.victor.practice.modul02.instance.Project;
@@ -27,7 +28,7 @@ public class CustomerDAOimpl extends PooledJdbcUserDao implements CustomerDAO {
             ps.execute();
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
         return customer;
     }
@@ -47,7 +48,7 @@ public class CustomerDAOimpl extends PooledJdbcUserDao implements CustomerDAO {
             }
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
         return customer;
     }
@@ -60,14 +61,15 @@ public class CustomerDAOimpl extends PooledJdbcUserDao implements CustomerDAO {
             ps.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
     }
 
     @Override
     public void delete(int id, List<Project> projectList) {
-        try (Connection connection = getConnection()) {
-
+        Connection connection = null;
+        try {
+            connection = getConnection();
             connection.setAutoCommit(false);
 
             for (Project project : projectList) {
@@ -97,9 +99,29 @@ public class CustomerDAOimpl extends PooledJdbcUserDao implements CustomerDAO {
 
             connection.commit();
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException e1) {
+                ExceptionLogger.initLogger(e1.toString());
+            }
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true);
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    ExceptionLogger.initLogger(e.toString());
+                }
+            }
         }
     }
 
@@ -118,7 +140,7 @@ public class CustomerDAOimpl extends PooledJdbcUserDao implements CustomerDAO {
             }
         } catch (SQLException e) {
             System.err.println("Ошибка при работе с базой данных!");
-            ExeptionLogger.initLogger(e.toString());
+            ExceptionLogger.initLogger(e.toString());
         }
         return customerList;
     }

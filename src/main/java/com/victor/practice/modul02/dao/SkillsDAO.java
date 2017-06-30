@@ -1,6 +1,6 @@
 package com.victor.practice.modul02.dao;
 
-import com.victor.practice.modul02.instance.Skill;
+import com.victor.practice.modul02.instance.Skills;
 
 import java.util.List;
 
@@ -8,13 +8,13 @@ import java.util.List;
  * Created by Sonikb on 11.06.2017.
  */
 public interface SkillsDAO {
-    Skill save(Skill obj);
+    Skills save(Skills skills);
 
-    Skill read(int id);
+    Skills read(int id);
 
-    void update(int id, Skill obj);
+    void update(int id, Skills skills);
 
     void delete(int id);
 
-    List<Skill> readAllTable();
+    List<Skills> readAllTable();
 }
