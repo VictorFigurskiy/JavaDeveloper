@@ -20,7 +20,7 @@ public class Developer implements Serializable {
     private String surname;
     @Column
     private int salary;
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)  // cascade = CascadeType.REFRESH - (соответсвует - select) при удалении будет затронута только промежуточная таблица
     private List<Skills> skillsList;
     @Transient
     private int projectID;

@@ -1,0 +1,57 @@
+1. Есть веб страница, которая расположена по доменному адресу www.example.com. Написать HTTP запрос который будет отправлен браузером при загрузке этого сайта.
+GET /main HTTP/1.1
+HOST: www.example.com
+
+2. Дано поисковый сервер на доменном адресе search.com. Поиск осуществляется с помощью отправки HTTP GET запроса, где слова поиска задаются параметрами запроса. Написать запрос.
+GET /find?param1=value1&param2=value2 HTTP/1.1
+HOST: search.com
+Accept: text/html
+
+3. Для задания 2 написать запрос который ищет предложение "I want to buy a flat"
+GET /find?param1=%22I%20want%20to%20buy%20a%20flat%22 HTTP/1.1
+HOST: search.com
+Accept: text/html
+
+4. Написать HTTP запрос который будет отправлен на сейвер buyme.com когда пользователь нажмет кпопку "купить". 
+GET /buyform HTTP/1.1
+HOST: buyme.com
+Form: webmaster@w3.org
+
+5. Написать запрос на сервер buyme.com, который будет использован для удаления товара с каталога.
+DELETE /iphone%206plus HTTP/1.1
+HOST: buyme.com
+
+6. Написать вид ответа сервера в случае: все хорошо, ресурс не найдет, ресурс найден но надо перенаправить на другой ресурс, запрашиваемый HTTP метод сервером на поддерживается, внутренняя ошибка.
+Status Code: 200 OK - все хорошо
+Status Code: 204 No Content - ресурс не найдет
+Status Code: 302 Found, 302 Moved Temporarily - ресурс найден но надо перенаправить на другой ресурс
+Status Code: 501 Not Implemented - запрашиваемый HTTP метод сервером не поддерживается
+Status Code: 500 Internal Server Error - внутренняя ошибка
+
+7. Написать запрос GET на сервер example.com который говорит серверу за закрывать соеденение.
+GET example.com/ HTTP/1.1
+HOST: example.com
+Connection: keep-alive
+
+8. Написать запрос GET на сервер example.com в котором передается сессия через сookie.
+GET /spec.html HTTP/1.1
+Host: example.com
+Cookie: VISITOR_INFO1_LIVE=iAoifAOKQi…09; name1=value1; name2=value2
+Accept: text/html
+
+9. У вас есть логин форма с полями: username, password. Написать HTTP запрос который будет отправлен на auth.com/login для входа пользователя.
+POST http://google.com/ HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+Host: google.com
+
+username=dan&password=qwerty123
+
+10. Написать запрос который будет отправлен серверу при загрузке файла file.txt на сейчас upload.com
+POST /form.html HTTP/1.1
+Host: upload.com
+Connection: keep-alive
+Keep-Alive: 300
+(пустая строка)
+
+Content-Disposition: form-data; name="file"; filename="file.txt"
+Content-Type: text/plain
