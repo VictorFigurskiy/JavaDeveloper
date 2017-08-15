@@ -21,8 +21,7 @@ public class HibernateUtil {
 
             File file = new File("src\\main\\resources\\META-INF\\Hibernate.cfg.xml");
 
-            Configuration configuration = new Configuration().configure();
-            configuration.configure(file);
+            Configuration configuration = new Configuration().configure(file);
 
 //            StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
 
